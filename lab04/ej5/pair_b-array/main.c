@@ -23,3 +23,11 @@ int main(void) {
   q = pair_destroy(q);
   return EXIT_SUCCESS;
 }
+
+/*La función falla pues show_pair estaba definido para otra implementación del
+ * TAD.
+ *
+ * El diseño del TAD no logra el encapsulamiento, pues el usuario debe ingresar
+ * los datos correctos si quiere, por ejemplo, printear el pair. Debería estar
+ * definida una funcion en el TAD que ya lo haga por él.
+ */
