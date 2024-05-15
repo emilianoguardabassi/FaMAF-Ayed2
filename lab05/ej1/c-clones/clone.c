@@ -68,3 +68,8 @@ int main(void) {
 
   return EXIT_SUCCESS;
 }
+
+/*El problema es que antes se estaba tomando length como 7, por ende solo se
+ * imprimia como copia "A long", en vez de todo el string. y no se estaba dando
+ * bien la memoria a output */
+/* El parametro length toma el valor 1452 en la funcion string_clone  */
