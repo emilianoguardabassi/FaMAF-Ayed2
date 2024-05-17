@@ -13,7 +13,7 @@ stack stack_empty() {
 }
 
 stack stack_push(stack s, stack_elem e) {
-  stack p = malloc(sizeof(stack));
+  stack p = malloc(sizeof(struct _s_stack));
   p->elem = e;
   p->next = s;
   s = p;
@@ -21,6 +21,7 @@ stack stack_push(stack s, stack_elem e) {
 }
 
 stack stack_pop(stack s) {
+
   stack p = NULL;
   p = s;
   s = s->next;
