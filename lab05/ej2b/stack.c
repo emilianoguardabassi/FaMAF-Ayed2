@@ -8,22 +8,34 @@ struct _s_stack {
   size_t size;
 };
 
-bool invrep(stack s) { return s->size == stack_size(s); }
+bool invrep(stack s) {
+  if (s == NULL) {
+    return true;
+  } else if (s->size == stack_size(s)) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 stack stack_empty() {
-  stack s = malloc(sizeof(stack));
-  s->size = 0;
-  s->next = NULL;
+  stack s = NULL;
 
   return s;
 }
 
 stack stack_push(stack s, stack_elem e) {
-  assert(invrep(s));
-  stack p = malloc(sizeof(stack));
-  p->elem = e;
+  stack p = malloc(sizeof(struct _s_stack));
+  if (s == NULL) {
+    p->size = 1;
+
+  } else {
+    assert(invrep(s));
+
+    p->size = s->size + 1;
+  }
   p->next = s;
-  p->size = s->size + 1;
+  p->elem = e;
   s = p;
   assert(invrep(s));
   return s;
@@ -33,17 +45,19 @@ stack stack_pop(stack s) {
   assert(invrep(s));
   assert(!stack_is_empty(s));
   stack p = NULL;
-  stack q = p;
   p = s;
-  q = p->next;
-  q->size = s->size - 1;
+  s = s->next;
+
   free(p);
 
-  assert(invrep(q));
-  return q;
+  assert(invrep(s));
+  return s;
 }
 
-unsigned int stack_size(stack s) { return s->size; }
+unsigned int stack_size(stack s) {
+  assert(s != NULL);
+  return s->size;
+}
 
 stack_elem stack_top(stack s) {
   assert(s != NULL);
@@ -53,7 +67,7 @@ stack_elem stack_top(stack s) {
 
 bool stack_is_empty(stack s) {
   assert(invrep(s));
-  return (s->size == 0);
+  return (s == NULL);
 }
 
 stack_elem *stack_to_array(stack s) {
@@ -80,14 +94,15 @@ stack_elem *stack_to_array(stack s) {
 
 stack stack_destroy(stack s) {
   assert(invrep(s));
+
   stack p = NULL;
   p = s;
-
-  while (!stack_is_empty(p)) {
-    p = stack_pop(p);
+  while (s != NULL) {
+    p = s;
+    s = s->next;
+    assert(invrep(p));
+    free(p);
   }
-  assert(invrep(p));
-  free(p);
 
   return s;
 }
