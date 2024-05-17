@@ -57,20 +57,20 @@ int main(int argc, char *argv[]) {
   array_dump(array, length);
 
   int *new_array = NULL;
-  stack p = stack_empty();
+  // stack p = stack_empty();
   stack s = stack_empty();
   for (size_t i = 0; i < length; i++) {
-    p = stack_push(p, array[i]);
+    s = stack_push(s, array[i]);
   }
-  size_t j = 0;
-  while (!stack_is_empty(p)) {
-    s = stack_push(s, stack_top(p));
-    p = stack_pop(p);
-    j++;
-  }
+  // size_t j = 0;
+  // while (!stack_is_empty(p)) {
+  //   s = stack_push(s, stack_top(p));
+  //   p = stack_pop(p);
+  //   j++;
+  // }
   new_array = stack_to_array(s);
   stack_destroy(s);
-  stack_destroy(p);
+  // stack_destroy(p);
 
   printf("Reversed: ");
   array_dump(new_array, length);
