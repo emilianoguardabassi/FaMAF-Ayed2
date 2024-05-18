@@ -7,6 +7,8 @@
 
 #include <stdbool.h>
 
+#define STARTER_CAPACITY 30
+
 /**
  * @brief Stack type definition
  */
