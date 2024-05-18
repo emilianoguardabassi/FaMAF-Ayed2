@@ -1,4 +1,5 @@
 #include "strfuncs.h"
+#include <stdio.h>
 #include <stdlib.h>
 
 size_t string_length(const char *str) {
@@ -21,7 +22,7 @@ char *string_filter(const char *str, char c) {
     return NULL;
   }
   size_t length = string_length(str);
-  char *nstr = (char *)malloc(sizeof(length + 1));
+  char *nstr = calloc(length, sizeof(char));
   if (nstr != NULL) {
     size_t i = 0, j = 0;
     while (str[i] != '\0') {
@@ -33,6 +34,9 @@ char *string_filter(const char *str, char c) {
       i++;
     }
     nstr[j] = '\0';
+  } else {
+    fprintf(stderr, "ERROR: string NULL\n");
+    abort();
   }
   return nstr;
 }
