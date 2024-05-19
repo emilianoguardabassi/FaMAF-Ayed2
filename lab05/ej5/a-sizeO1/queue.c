@@ -43,7 +43,7 @@ queue queue_empty(void) {
   // q->capacity = STARTING_CAPACITY;
   q->size = 0u;
   q->first = NULL;
-  q->rear->next = q->first;
+  q->rear = NULL;
   assert(invrep(q) && queue_is_empty(q));
   return q;
 }
@@ -53,9 +53,15 @@ queue queue_enqueue(queue q, queue_elem e) {
   struct s_node *new_node = create_node(e);
   if (q->first == NULL) {
     q->first = new_node;
+    q->first->next = q->rear;
+
   } else {
-    new_node = q->rear;
-    q->rear = q->rear->next;
+    struct s_node *aux = q->first;
+    while (aux->next != NULL) {
+      aux = aux->next;
+    }
+    aux->next = new_node;
+    q->rear = aux->next;
   }
   q->size++;
   assert(invrep(q) && !queue_is_empty(q));
@@ -78,6 +84,7 @@ unsigned int queue_size(queue q) {
    * COMPLETAR
    *
    */
+  size = q->size;
   return size;
 }
 
