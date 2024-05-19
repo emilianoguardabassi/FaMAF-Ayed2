@@ -39,6 +39,5 @@ int main(void) {
          "%s un palíndromo.\n\n",
          user_input, string_is_symmetric(filtered) ? "Es" : "NO es");
   free(filtered);
-
   return EXIT_SUCCESS;
 }

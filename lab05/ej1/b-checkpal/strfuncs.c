@@ -20,8 +20,8 @@ char *string_filter(const char *str, char c) {
   if (str == NULL) {
     return NULL;
   }
-  size_t length = string_length(str);
-  char *nstr = (char *)malloc(sizeof(length + 1));
+  // size_t length = string_length(str);
+  char *nstr = calloc(string_length(str) + 1, sizeof(char));
   if (nstr != NULL) {
     size_t i = 0, j = 0;
     while (str[i] != '\0') {
