@@ -93,6 +93,26 @@ queue queue_dequeue(queue q) {
   return q;
 }
 
+queue queue_disscard(queue q, unsigned int n) {
+  assert(invrep(q) && queue_size(q) > n);
+  if (n == 0) {
+    q = queue_dequeue(q);
+  } else {
+
+    struct s_node *aux = q->first;
+    for (size_t i = 0; i < n - 1 && aux->next != NULL; i++) {
+      aux = aux->next;
+    }
+    struct s_node *delete = aux->next;
+    aux->next = delete->next;
+    destroy_node(delete);
+  }
+
+  q->size--;
+  assert(invrep(q));
+  return q;
+}
+
 void queue_dump(queue q, FILE *file) {
   file = file == NULL ? stdout : file;
   struct s_node *node = q->first;
