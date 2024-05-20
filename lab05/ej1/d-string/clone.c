@@ -7,8 +7,7 @@
 
 char *string_clone(const char *str) {
   char *clone = NULL;
-  size_t length = strlen(str);
-  clone = calloc(length, sizeof(char));
+  clone = calloc(MAX_LENGTH, sizeof(char));
   strcpy(clone, str);
   return clone;
 }

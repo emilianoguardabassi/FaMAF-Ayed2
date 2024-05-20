@@ -11,7 +11,7 @@ struct s_queue {
   //////
   // unsigned int capacity;
   unsigned int size;
-  // struct s_node *rear;
+  struct s_node *rear;
   struct s_node *first;
 };
 
@@ -43,7 +43,7 @@ queue queue_empty(void) {
   // q->capacity = STARTING_CAPACITY;
   q->size = 0u;
   q->first = NULL;
-  // q->rear = NULL;
+  q->rear = NULL;
   assert(invrep(q) && queue_is_empty(q));
   return q;
 }
@@ -53,15 +53,11 @@ queue queue_enqueue(queue q, queue_elem e) {
   struct s_node *new_node = create_node(e);
   if (q->first == NULL) {
     q->first = new_node;
-    // q->first->next = q->rear;
+    q->rear = q->first;
 
   } else {
-    struct s_node *aux = q->first;
-    while (aux->next != NULL) {
-      aux = aux->next;
-    }
-    aux->next = new_node;
-    // q->rear = aux->next;
+    q->rear->next = new_node;
+    q->rear = new_node;
   }
   q->size++;
   assert(invrep(q) && !queue_is_empty(q));
@@ -89,6 +85,26 @@ queue queue_dequeue(queue q) {
   struct s_node *killme = q->first;
   q->first = q->first->next;
   killme = destroy_node(killme);
+  assert(invrep(q));
+  return q;
+}
+
+queue queue_disscard(queue q, unsigned int n) {
+  assert(invrep(q) && queue_size(q) > n);
+  if (n == 0) {
+    q = queue_dequeue(q);
+  } else {
+
+    struct s_node *aux = q->first;
+    for (size_t i = 0; i < n - 1 && aux->next != NULL; i++) {
+      aux = aux->next;
+    }
+    struct s_node *delete = aux->next;
+    aux->next = delete->next;
+    destroy_node(delete);
+  }
+
+  q->size--;
   assert(invrep(q));
   return q;
 }
