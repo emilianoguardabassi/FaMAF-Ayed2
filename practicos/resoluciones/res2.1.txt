@@ -1,0 +1,81 @@
+### Ejercicio 1
+Escribí un algoritmo que dada una matriz a:array[1..n,1..m] of int calcule el elemento mínimo. Escribir otro algoritmo
+que devuelva un arreglo array[1..n] con el mínimo de cada fila de la matriz a.
+
+fun minmatix(a:array[1..n,1..m]) ret m:nat
+    m := a[1,1]
+    for i:=1 to n do 
+        for j:=1 to m do 
+            if m > a[i,j] then m:= a[i,j]
+        od 
+    od
+end fun
+
+### Ejercicio 2
+Dados los tipos enumerados
+
+type mes = enumerate 
+    enero 
+    febrero
+    ...
+    diciembre
+    end enumerate 
+
+type clima = enumerate
+    Temp 
+    TempMax
+    TempMin
+    Pres
+    Hum
+    Prec
+    end enumerate
+
+El arreglo med:array[1980..2016, enero..diciembre,1..28,Temp..Prec] of nat es un arreglo multidimencional
+que contiene todas las mediciones estadísticas del clima para la ciudad de Córdoba desde el 1/1/1980 
+hasta el 28/12/2016. Por ejemplo, med[2014,febrero,3,Pres] indica la presión atmosférica que se registró
+el día 3 de febrero de 2014. Todas las mediciones están expresadas con numeros enteros. Por simplicidad
+asumiremos que todos los meses tienen 28 días.
+
+a) Dar un algoritmo que obtenga la menor temperatura mínima histórica registrada en la ciudad de Córdoba
+según los datos del arreglo.
+b) Dar un algoritmo que devuelva un arreglo que registre para cada año entre 1980 y 2016 la mayor temperatura
+registrada durante ese año.
+c) Dar un algoritmo que devuelva un arreglo que registre para cada año entre 1980 y 2016  el mes de ese año 
+en que se registró la mayor cantidad mensual de precipitaciones.
+d) Dar un algoritmo que utilice el arreglo devuelto en el inciso aterior (ademas de med) para obtener el año 
+en que ese máximo mensual de precipitaciones fue mínimo (comparado con los de años anteriores)
+e) Dar un algoritmo que obtenga el mismo resultado sin utilizar el del inciso c.
+
+resoluciones:
+
+a)
+fun mintemphist(a:array[...]of nat) ret min:nat 
+    min:=a[1980,enero,1,TempMin]
+    for i:=1980 to 2016 do 
+        for j:=enero to diciembre do 
+            for k:=1 to 28
+                if min > a[i,j,k,TempMin] then
+                    min := a[i,j,k,TempMin]
+                fi 
+            od 
+        od 
+    od
+end fun
+
+b)
+
+
+fun mintemphist(a:array[...]of nat) ret amin:array[1980..2016] of nat 
+    var min:nat
+    for i:=1980 to 2016 do 
+        min:=a[i,1,enero,TempMin]
+        for j:=enero to diciembre do 
+            for k:=1 to 28
+                if min > a[i,j,k,TempMin] then
+                    min := a[i,j,k,TempMin]
+                fi 
+            od 
+        od 
+    amin[i]:=min
+    od
+end fun
