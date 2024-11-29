@@ -1,0 +1,21 @@
+### Ejercicio 1:
+Completá la implementación de listas dada en el teórico usando punteros.
+
+spec List of T where
+
+constructors
+    fun empty()ret l:List of T 
+    {crea una lista vacía}
+
+    proc addl(in e:T, in/out l:List of T)
+    {agrega elemento por izquierda}
+
+destroy
+    proc destroy(in/out l: List of T)
+    {libera la memoria}
+
+operations
+    fun is_empty(l:List of T) ret b:bool
+    {chequea si está vacía}
+
+    ir chequeando los otros, están en las filminas.

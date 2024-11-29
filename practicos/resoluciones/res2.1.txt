@@ -79,3 +79,68 @@ fun mintemphist(a:array[...]of nat) ret amin:array[1980..2016] of nat
     amin[i]:=min
     od
 end fun
+
+
+bueno, los otros son similares...
+
+
+
+### Ejercicio 3 
+Dado el tipo 
+
+type person = tuple
+    name: string
+    age: nat
+    weight: nat 
+    end tuple 
+
+a) Escribí un algoritmo que calcule la edad y peso promedio de un arreglo a:array[1..n] of person.
+b) Escribí un algoritmo que ordene alfabéticamente dicho arreglo.
+
+resoluciones:
+a)
+fun avgAge(a:array[1..n] of person) ret avga:float
+    avga := 0
+    for i:= 1 to n do 
+        avga := avga + a[i].age 
+    od 
+    avga := avga / n 
+
+end fun
+
+fun avgWeight(a:array[1..n] of person) ret avgw:float
+    avgw := 0
+    for i:= 1 to n do 
+        avga := avgw + a[i].weight 
+    od 
+    avga := avgw / n 
+end fun
+
+tambien podría ser con un proc que reciba out avga y out avgw
+
+b) 
+asumiremos que tenemos una funcion que compara strings
+
+fun avgWeight(a:array[1..n] of person) ret alph:array[1..n] of person
+    alph := sortbyname(a)
+end fun
+//0 ganas de hacerlo
+
+### Ejercicio 4 
+Dados dos punteros p,q: pointer to int 
+
+a) Escribí un algoritmo que intercambie los valores referidos sin modificar los valores de p y q.
+b) Escribí otro algoritmo que intercambie los valores de los punteros.
+
+resoluciones:
+a)
+proc intercambio(in/out p:pointer to int , in/out q : pointer to int)
+    var temp:int 
+    temp := *p 
+    p:=*q 
+    q:=temp
+
+
+    //cansado asdasdasd
+    
+### Ejercicio 5:
