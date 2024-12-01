@@ -1,21 +1,526 @@
 ### Ejercicio 1:
 Completá la implementación de listas dada en el teórico usando punteros.
 
-spec List of T where
+implement List of T where
+
+type Node of T = tuple
+    elem: T 
+    next: pointer to (Node of T)
+    end tuple
+
+type List of T = pointer to (Node of T)
 
 constructors
     fun empty()ret l:List of T 
-    {crea una lista vacía}
+        l := NULL
+    end fun 
+
 
     proc addl(in e:T, in/out l:List of T)
-    {agrega elemento por izquierda}
+        var p: pointer to (Node of T)
+        alloc(p)
+        p->elem:=e 
+        p->next:=l 
+        l:=p
+    end proc
 
 destroy
     proc destroy(in/out l: List of T)
-    {libera la memoria}
+        var aux: pointer to (Node of T)
+        aux := l 
+        while l != NULL do 
+            aux := l
+            l := l->next
+            free(aux)
+        od
+        l:=null
+    end proc
 
 operations
-    fun is_empty(l:List of T) ret b:bool
-    {chequea si está vacía}
+    fun is_empty(l : List of T) ret b : bool
+        b := l = NULL
 
-    ir chequeando los otros, están en las filminas.
+    {- PRE: not is_empty(l) -}
+    fun head(l : List of T) ret e : T
+        e := l->elem
+
+    {- PRE: not is_empty(l) -}
+    proc tail(in/out l : List of T)
+        var p: pointer to (Node of T)
+        p := l 
+        l:=l->next
+        free(p)
+
+    proc addr (in/out l : List of T,in e : T)
+        var aux:pointer to (Node of T)
+        var p:pointer to (Node of T)
+        alloc(p)
+        p->next :=null 
+        p->elem:= e
+        if l=null then l:=p 
+        else
+            aux := l 
+            while aux->next != NULL do 
+                aux := aux->next
+            od
+            aux->next := p
+        fi
+    end proc
+
+
+    fun length(l : List of T) ret n : nat
+        var aux: pointer to (Node of T)
+        aux := l
+        n := 0
+        while aux != NULL do 
+            aux := aux->next
+            n:= n+1
+        od 
+    end fun
+
+    proc concat(in/out l : List of T,in l0 : List of T)
+        var aux:pointer to (Node of T)
+        if l=null then l:=l0
+        else
+            aux := l
+            while aux->next != null do 
+                aux:=aux->next
+            od 
+            aux->next := l0
+        fi
+    end proc
+
+    {- PRE: length(l) > n -}
+    fun index(l : List of T,n : nat) ret e : T
+        var aux: pointer to (Node of T)
+        aux := l
+        for i:=1 to n do 
+            aux:=aux->next 
+        od 
+        e:=aux->elem
+
+    {-falta manejo de errores-}
+    proc take(in/out l : List of T,in n : nat)
+        var aux: pointer to (Node of T)
+        aux := l
+        for i:=1 to n do 
+            aux:=aux->next 
+        od 
+        destroy(aux)
+
+    fun copy_list(l1 : List of T) ret l2 : List of T
+    {- Copia todos los elementos de l1 en la nueva lista l2 -}
+
+
+    proc drop(in/out l: List of T, in n: nat)
+        var aux: pointer to (Node of T)
+        var temp: pointer to (Node of T)
+        aux := l
+        // Recorrer y eliminar los primeros n nodos
+        for i := 1 to n do
+            if aux = NULL then
+                break  // Si llegamos al final antes de eliminar n elementos
+            fi
+            temp := aux
+            aux := aux->next
+            free(temp)  // Liberar el nodo actual
+        od
+
+        // Actualizar el puntero principal
+        l := aux
+    end proc
+
+
+    fun copy_list(l1: List of T) ret l2: List of T
+        var aux: pointer to (Node of T)  // Para recorrer l1
+        l2 := empty()
+
+        aux := l1
+        while aux != NULL do
+            addr(l2,aux->e)
+            aux := aux->next
+        od
+    end fun
+
+
+
+### Ejercicio 2
+
+Chequear clase grabada!
+
+### Ejercicio 3 
+
+Implementá el procedimiento add_at que toma una lista de tipo T, un natural n, un elemento e de 
+tipo T, y agrega el elemento e en la posición n, quedando todos los elementos siguientes a continuación.
+Esta operación tiene como precondición que n sea menor al largo de la lista.
+AYUDA: Puede ayudarte usar las operaciones copy, take y drop
+
+
+    {-Precondición: n < length(l)-}
+    proc add_at(in/out l: List of T, in n: nat, in e: T)
+        var left: List of T   // Lista con los primeros n elementos
+        var right: List of T  // Lista con los elementos desde la posición n
+        var new_node: pointer to (Node of T)
+
+
+        // Dividir la lista original en dos partes
+        left := take(copy(l), n)    // Copia los primeros n elementos de la lista
+        right := drop(copy(l), n)   // Copia los elementos desde la posición n
+
+        // Crear un nuevo nodo con el elemento e
+        alloc(new_node)
+        new_node->elem := e
+        new_node->next := right
+
+        // Conectar left con el nuevo nodo
+        var aux: pointer to (Node of T)
+        aux := left
+        while aux->next != NULL do
+            aux := aux->next
+        od
+        aux->next := new_node
+        fi
+
+        // Actualizar l para que apunte al inicio de left
+        l := left
+    end proc
+
+### Ejercicio 4
+
+(a)
+Especificá un TAD tablero para mantener el tanteador en contiendas deportivas entre dos equipos
+(equipo A y equipo B). Deberá tener un constructor para el comienzo del partido (tanteador
+inicial), un constructor para registrar un nuevo tanto del equipo A y uno para registrar un nuevo
+tanto del equipo B. El tablero sólo registra el estado actual del tanteador, por lo tanto el orden
+en que se fueron anotando los tantos es irrelevante.
+Además se requiere operaciones para comprobar si el tanteador está en cero, si el equipo A ha
+anotado algún tanto, si el equipo B ha anotado algún tanto, una que devuelva verdadero si y sólo
+si el equipo A va ganando, otra que devuelva verdadero si y sólo si el equipo B va ganando, y
+una que devuelva verdadero si y sólo si se registra un empate.
+Finalmente habrá una operación que permita anotarle un número n de tantos a un equipo y
+otra que permita “castigarlo” restándole un número n de tantos. En este último caso, si se le
+restan más tantos de los acumulados equivaldrá a no haber anotado ninguno desde el comienzo
+del partido.
+
+(b)
+Implementá el TAD Tablero utilizando una tupla con dos contadores: uno que indique los tantos
+del equipo A, y otro que indique los tantos del equipo B.
+
+(c)
+Implementá el TAD Tablero utilizando una tupla con dos naturales: uno que indique los tantos del
+equipo A, y otro que indique los tantos del equipo B. ¿Hay alguna diferencia con la implementación
+del inciso anterior? ¿Alguna operación puede resolverse más eficientemente?
+
+
+a) 
+
+spec Tablero where 
+
+constructors
+    fun init_tablero() ret t: Tablero
+        {-Inicializa el tablero-}
+    proc scoreA(in/out t:Tablero)
+        {-Incrementa  el puntaje de A-}
+    proc scoreB(in/out t:Tablero)
+        {-Incrementa  el puntaje de B-}
+
+operations 
+    fun is_zero(t:Tablero) ret b:bool
+        {-Se fija si el tanteador está en 0-}
+    fun isA_winning(t:Tablero) ret b:bool
+        {-Se fija si el A va ganando-}
+    fun isB_winning(t:Tablero) ret b:bool
+        {-Se fija si el B va ganando-}
+    fun is_tie(t:Tablero) ret b:bool
+        {-Se fija si hay empate-}
+    proc add_n_to_A(in/out t:Tablero, in n:nat)
+        {-Añade n tantos al equipo seleccionado-}
+    proc add_n_to_B(in/out t:Tablero, in n:nat)
+        {-Añade n tantos al equipo seleccionado-}
+    proc remove_n_A(in/out t:Tablero,in team: T, in n:nat)
+        {-Retira n tantos del equipo seleccionado, si en número a 
+        retirar fuera mayor a los tantos que tiene, devuelve 0-}
+    proc remove_n_B(in/out t:Tablero,in team: T, in n:nat)
+        {-Retira n tantos del equipo seleccionado, si en número a 
+        retirar fuera mayor a los tantos que tiene, devuelve 0-}
+destroy
+    proc destroyTablero(in/out t:Tablero)
+        {-Libera la memoria-}
+b) 
+implement Tablero where
+
+type Tablero = tuple
+    a:counter
+    b:counter
+    end tuple
+constructors
+    fun init_tablero() ret t:Tablero
+        t.a:=init()
+        t.b:=init()
+    end fun
+
+    proc scoreA(in/out t:Tablero)
+        inc(t.a)
+    end proc
+
+    proc scoreB(in/out t:Tablero)
+        inc(t.b)
+    end proc
+
+operations
+    fun is_zero(t:Tablero) ret b:bool
+        b := is_init(t.a) and is_init(t.b)
+    end fun
+
+    fun isA_winning(t:Tablero) ret b:bool
+        b := t.a > t.b
+    end fun
+
+    fun isB_winning(t:Tablero) ret b:bool
+        b := t.b > t.a
+    end fun
+
+    fun is_tie(t:Tablero) ret b:bool
+        b := t.b = t.a
+    end fun
+
+    proc add_n_to_A(in/out t:Tablero,in team: T, in n:nat)
+        for i:=1 to n do 
+           scoreA(t) 
+        od 
+    end proc
+
+    proc add_n_to_B(in/out t:Tablero,in team: T, in n:nat)
+        for i:=1 to n do 
+           scoreB(t) 
+        od 
+    end proc
+
+
+    proc remove_n_A(in/out t:Tablero,in team: T, in n:nat)
+        var i:nat 
+        i := 1
+        while 1 < n and t.a != 0 do
+            dec(t.a)
+            i:=i+1
+        od
+    end proc
+
+    proc remove_n_B(in/out t:Tablero,in team: T, in n:nat)
+        var i:nat 
+        i := 1
+        while 1 < n and t.a != 0 do
+            dec(t.b)
+            i:=i+1
+        od
+    end proc
+
+destroy 
+    proc destroyTablero(in/out t:Tablero)
+        destroy(t.a)
+        destryo(t.b)
+    end proc
+
+
+c)
+
+
+implement Tablero where
+
+type Tablero = tuple
+    a:nat
+    b:nat
+    end tuple
+
+constructors
+    fun init_tablero() ret t:Tablero
+        t.a:=0
+        t.b:=0
+    end fun
+
+    proc scoreA(in/out t:Tablero)
+        t.a:= t.a + 1
+    end proc
+
+    proc scoreB(in/out t:Tablero)
+        t.b:=b+1
+    end proc
+
+operations
+    fun is_zero(t:Tablero) ret b:bool
+        b := t.a=0 and t.b=0
+    end fun
+
+    fun isA_winning(t:Tablero) ret b:bool
+        b := t.a > t.b
+    end fun
+
+    fun isB_winning(t:Tablero) ret b:bool
+        b := t.b > t.a
+    end fun
+
+    fun is_tie(t:Tablero) ret b:bool
+        b := t.b = t.a
+    end fun
+
+    proc add_n_to_A(in/out t:Tablero,in team: T, in n:nat)
+        for i:=1 to n do 
+           scoreA(t) 
+        od 
+    end proc
+
+    proc add_n_to_B(in/out t:Tablero,in team: T, in n:nat)
+        for i:=1 to n do 
+           scoreB(t) 
+        od 
+    end proc
+
+
+    proc remove_n_A(in/out t:Tablero,in team: T, in n:nat)
+        var i:nat 
+        i := 1
+        while 1 < n and t.a != 0 do
+            t.a:=t.a-1
+            i:=i+1
+        od
+    end proc
+    proc remove_n_B(in/out t:Tablero,in team: T, in n:nat)
+
+        var i:nat 
+        i := 1
+        while 1 < n and t.a != 0 do
+            t.b:=t.b-1
+            i:=i+1
+        od
+    end proc
+
+destroy 
+    proc destroyTablero(in/out t:Tablero)
+        print("Freeing memory...\n")
+        skip
+    end proc
+
+### Ejercicio 5
+Especificá el TAD Conjunto finito de elementos de tipo T. Como constructores considerá el conjunto
+vacı́o y el que agrega un elemento a un conjunto. Como operaciones: una que chequee si un elemento e
+pertenece a un conjunto c, una que chequee si un conjunto es vacı́o, la operación de unir un conjunto a
+otro , insersectar un conjunto con otro y obtener la diferencia. Estas últimas tres operaciones deberı́an
+especificarse como procedimientos que toman dos conjuntos y modifican el primero de ellos.
+
+spec set of T where 
+
+constructors 
+    fun emptyset() ret s:set 
+        {-inicializa el set-}
+
+    proc add_to_set(in/out s:set, in e:T)
+        {-Añade un elemento al set-}
+
+operations 
+    fun is_there(e:T) ret b:bool
+        {-Se fija si un e pertenece al set-}
+    fun is_empty(s:set) ret b:bool
+        {-Se fija si el set es vacío-}
+    proc join_set(in/out t1:set, in t2:set)
+        {-devuelve la union de dos sets-}
+    proc and_set(in/out t1:set, in t2:set)
+        {-devuelve la intersección de dos sets-}
+    proc dif_set(in/out t1:set, in t2:set)
+        {-devuelve la intersección de dos sets-}
+
+destroy
+    proc destroyset(in/out s:set)
+        {-libera memoria del set-}
+
+### Ejercicio 6
+
+Implementá el TAD Conjunto finito de elementos de tipo T utilizando:
+
+(a)
+Una lista de elementos de tipo T, donde el constructor para agregar elementos al conjunto se
+implementa directamente con el constructor addl de las listas.
+
+(b)
+Una lista de elementos de tipo T, donde se asegure siempre que la lista está ordenada crecien-
+temente y no tiene elementos repetidos. Debes tener cuidado especialmente con el constructor
+de agregar elemento y las operaciones de unión, intersección y diferencia. A la propiedad de
+mantener siempre la lista ordenada y sin repeticiones le llamamos invariante de representación.
+Ayuda: Para implementar el constructor de agregar elemento puede serte muy útil la operación
+add at implementada en el punto 3.
+
+
+
+
+
+implement set of T where 
+
+type set = List of T
+
+constructors 
+    fun emptyset() ret s:set 
+        set:=empty()
+    end fun
+
+    proc add_to_set(in/out s:set, in e:T)
+        addl(s,e)
+    end proc
+
+operations 
+
+    fun is_there(s:set,e:T) ret b:bool
+        var aux: set 
+        aux:=copy(s)
+        b:=false
+        while aux != NULL do 
+            if b:= head(aux) = e then 
+                b := true
+                break
+            else
+                tail(aux)
+            fi
+        od
+        destroyset(aux)
+    end fun
+
+    fun is_empty(s:set) ret b:bool
+        b:= set = null
+    end fun
+
+    proc join_set(in/out s1:set, in s2:set)
+        concat(s1,s2)
+    end proc
+
+    proc and_set(in/out s1:set, in s2:set)
+        var aux:set 
+        aux :=s2
+        while aux!=NULL do 
+            if is_there(s1, head(aux)) then
+                tail(aux)
+            else
+                remove_e_s(s1,head(aux)) // suponemos que existe
+                tail(aux)
+            fi
+        od
+    end proc
+
+    proc dif_set(in/out s1:set, in s2:set)
+        {-devuelve la intersección de dos sets-}
+        //COMPLETAR
+
+
+destroy
+    proc destroyset(in/out s:set)
+        destroy(s) //proc destryo de listas
+    end proc
+
+
+
+
+
+
+
+
+
+
+
+
