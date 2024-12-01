@@ -125,18 +125,60 @@ operations
     {- PRE: not is_empty_tree(t) -}
 
     fun height(t : Tree of T) ret n : Nat
-    {- Devuelve la distancia que hay entre la raíz de t
-    y la hoja más profunda. -}
+        if is_empty_tree(t) then 
+            n:=0
+        else
+            n:= 1 + max(height(left(t)),height(right(t)))
+        fi
+    end fun
     
     fun is_path(t : Tree of T, p : Path) ret b : Bool
-    {- Devuelve True si p es un camino válido en t -}
+        var aux: Tree of T
+        aux := t
+        b := true
+
+        for i := 1 to length(p) do
+            if is_empty_tree(aux) then
+                b := false
+                break
+            fi
+            if p[i] = "L" then
+                aux := left(aux)
+            else if p[i] = "R" then
+                aux := right(aux)
+            else
+                b := false
+                break
+            fi
+        od
+    end fun
 
     fun subtree_at(t : Tree of T, p : Path) ret t0 : Tree of T
-    {- Devuelve el subárbol que se encuentra al recorrer
-    el camino p en t . -}
+        var aux: Tree of T
+        aux := t
+        for i := 1 to length(p) do
+            if is_empty_tree(aux) then
+                aux := NULL
+            fi
+            if p[i] = "L" then
+                aux := left(aux)
+            else if p[i] = "R" then
+                aux := right(aux)
+            else
+                t0 := NULL
+                return
+            fi
+        od
+        t0 := aux
+    end fun
 
     fun elem_at(t : Tree of T, p : Path) ret e : T
-    {- Devuelve el elemento que se encuentra al recorrer
-    el camino p en t . -}
+        var aux: Tree of T
+        aux := subtree_at(t, p)
+        if is_empty_tree(aux) then
+            error("El camino no es válido.")
+        fi
+        e := root(aux)
+    end fun
     {- PRE: is_path(t,p) -}
 
