@@ -191,13 +191,65 @@ orden en que deben ser rescatadas para salvar el mayor número posible de ellas,
 ballena mar adentro toma tiempo constante t, que hay un único equipo de rescate y que una ballena no
 muere mientras está siendo regresada mar adentro.
 
+Planteamiento:
+    Entranda:
+        - b ballenas: nat
+        - array[s1..sn] of nat de tiempo en el que cada ballena puede sobrevivir hasta que la asistan 
+    Salida:
+        - numero de ballenas salvadas
+Condiciones:
+    Las ballenas pueden sobrevivir s tiempo hasta que las socorran y tardan t (constante) tiempo en ser devueltas
+    al mar, pero t no cuenta por sobre s, aunque si sobre las otras ballenas.
+    Hay un sólo equipo de rescate.
+Objetivo:
+    Devolver la mayor cantidad de ballenas al mar antes de que mueran
+Política del algoritmo:
+    Salvar a la ballena que menos tiempo de vida le quede primero
+
+Algoritmo:
+
+const t ?
+
+fun save_whales(whales:nat,s[1..whales]:array of nat) ret saves:nat
+    var total_time:nat
+    total_time := 0
+    saves:=0
+    sort(s) //asumimos la funcion sort
+    for i:=1 to whales do 
+        if total_time + t <= s[i] then 
+            saves:=saves + 1 
+            total_time:=total_time + t
+        fi
+    od
+end fun
 
 
 
+### Ejercicio 5:
 
+Sos el flamante dueño de un teléfono satelital, y se lo ofrecés a tus n amigos para que lo lleven con
+ellos cuando salgan de vacaciones el próximo verano. Lamentablemente cada uno de ellos irá a un lugar
+diferente y en algunos casos, los perı́odos de viaje se superponen. Por lo tanto es imposible prestarle el
+teléfono a todos, pero quisieras prestárselo al mayor número de amigos posible.
+Suponiendo que conoces los dı́as de partida y regreso (pi y ri respectivamente) de cada uno de tus amigos,
+¿cuál es el criterio para determinar, en un momento dado, a quien conviene prestarle el equipo?
+Tener en cuenta que cuando alguien lo devuelve, recién a partir del dı́a siguiente puede usarlo otro. Escribir
+un algoritmo voraz que solucione el problema.
 
+Planteamiento:
+    Entranda: n amigos, dia de partida y regraso de los amigos (pi y ri).
 
+    Salida: Cantidad de amigos a los que pudiste prestarlo
 
+Condiciones:
+    Tenes que prestarcelo antes de que se vayan de vacaciones, y hay que esperar un día entre que te lo devuelven
+    para darselo a otro.
+
+Política del algoritmo:
+    Propuesta1: Se le presta al que sale primero, si hay dos amigos que salen al mismo tiempo entonces al que tenga
+    un intervalo de viaje más corto será el seleccionado.
+
+Algoritmo:
 
 
 
