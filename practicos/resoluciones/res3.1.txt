@@ -1,0 +1,224 @@
+### Ejercicio 1
+
+Demostrar que el algoritmo voraz para el problema de la mochila sin fragmentación no siempre obtiene
+la solución óptima. Para ello puede modificar el algoritmo visto en clase de manera de que no permita
+fragmentación y encontrar un ejemplo para el cual no halla la solución óptima.
+
+type Objeto = tuple
+    id : Nat
+    value: Float
+    weight: Float
+    end tuple
+
+    obj : Objeto
+    type Obj_Mochila = tuple
+    fract : Float
+    end tuple
+
+fun mochila(W: Float, C: Set of Objeto) ret L : List of Obj_Mochila
+    var o_m : Obj_Mochila var resto : Float
+    var C_aux : Set of Objeto
+    S:= empty_list()
+    C_aux:= set_copy(C)
+    resto:= W
+    do (resto > 0) →
+        o_m.obj := select_obj(C_aux)
+        if o_m.obj.weight <= resto then 
+            o_m.fract := 1.0
+            resto := resto - o_m.obj.weight
+        else o_m.fract := resto/o_m.obj.weight
+            resto := 0
+        fi
+        addl(S,o_m)
+        elim(C_aux,o_m.obj)
+    od
+    set_destroy(C_aux)
+end fun
+
+
+fun select_obj(C: Set of Objeto) ret r : Objeto
+var C_aux : Set of Objeto
+var o : Objeto
+var m : Float
+m := -∞
+C_aux := set_copy(C)
+do (not is_empty_set(C_aux)) →
+    o := get(C_aux)
+    if (o.value/o.weight > m) then 
+        m := o.value/o.weight
+        r := o
+    fi
+    elim(C_aux,o)
+od
+set_destroy(C_aux)
+end fun
+
+
+
+// Resolver! 
+
+### Ejercicio 2
+
+Considere el problema de dar cambio. Pruebe o dé un contraejemplo: si el valor de cada moneda es al
+menos el doble de la anterior, y la moneda de menor valor es 1, entonces el algoritmo voraz arroja siempre
+una solución óptima.
+
+
+Cuando cada moneda tiene un valor que es al menos el doble de la anterior, el sistema de monedas se denomina canónico, porque cualquier cantidad se puede descomponer en monedas usando un enfoque voraz y obtener la solución óptima.
+Prueba: Por qué el Algoritmo Voraz Funciona
+
+    Propiedad de Optimalidad Local:
+        Dado que el valor de cada moneda es al menos el doble de la anterior, no hay beneficios en seleccionar monedas más pequeñas si una moneda más grande puede cubrir una parte
+        del cambio. Por ejemplo, si tienes que cubrir un valor de 6 y las monedas disponibles son {1,2,4,8}, usar la moneda de denominación 4 es más eficiente que usar
+        2+2, tanto en términos de cantidad de monedas como de total cubierto.
+
+    Descomposición del Problema:
+        Supongamos que el algoritmo voraz selecciona una moneda de valor c_k, y el cambio restante es rr. El problema se reduce a encontrar el cambio para r, lo cual puede
+        ser resuelto de manera óptima con el mismo enfoque porque rr es estrictamente menor que c_k y sigue siendo un problema más pequeño del mismo tipo.
+
+    Inducción:
+        Base: Para r<c_1, la solución óptima es r monedas de valor c1=1, lo cual es también lo que selecciona el algoritmo voraz.
+        Paso inductivo: Si el algoritmo voraz da una solución óptima para r<k, entonces seleccionará la moneda más grande posible para k, reduciendo el problema a r−c_k.
+        Por la hipótesis inductiva, la solución para r−c_k también será óptima.
+
+    Resultado:
+        Por inducción, el algoritmo voraz siempre genera una solución óptima.
+
+-------------------------------------------------------------------------------------------------------------------
+Para cada uno de los siguientes ejercicios:
+• Describa cuál es el criterio de selección.
+• ¿En qué estructuras de datos representará la información del problema?
+• Explique el algoritmo, es decir, los pasos a seguir para obtener el resultado. No se pide que ”lea” el
+algoritmo (”se define una variable x”, ”se declara un for”), si no que lo explique (”se recorre la lista/el
+arreglo/” o ”se elije de tal conjunto el que satisface...”).
+• Escriba el algoritmo en el lenguaje de programación de la materia.
+
+-------------------------------------------------------------------------------------------------------------------
+
+### Ejercicio 3
+
+Se desea realizar un viaje en un automóvil con autonomı́a A (en kilómetros), desde la localidad l0 hasta la
+localidad ln pasando por las localidades l1 , . . . , ln−1 en ese orden. Se conoce cada distancia di ≤ A entre
+la localidad li−1 y la localidad li (para 1 ≤ i ≤ n), y se sabe que existe una estación de combustible en
+cada una de las localidades.
+Escribir un algoritmo que compute el menor número de veces que es necesario cargar combustible para
+realizar el viaje, y las localidades donde se realizarı́a la carga.
+Suponer que inicialmente el tanque de combustible se encuentra vacı́o y que todas las estaciones de servicio
+cuentan con suficiente combustible.
+
+Planteamiento:
+    Entrada:
+        Autonomía del automóvil A (en kilómetros)
+        Distancias entre localidades d={d1,...,dn} donde di es la distancia entre li-1 y li 
+
+    Salida:
+        Número mínimo de paradas para cargar combustible
+        Localidades donde se realizan las cargas
+
+Algoritmo Voraz
+
+El algoritmo toma las decisiones de cargar combustible basándose en las siguientes reglas:
+
+    Partimos con el tanque vacío (combustible_restante=0).
+    Recorreremos las localidades desde l0 hasta ln, evaluando si podemos llegar a la siguiente localidad:
+        Si la distancia a la siguiente localidad (di) es menor o igual al combustible restante, continuamos.
+        Si no podemos llegar, paramos a cargar combustible en la localidad actual.
+    Repetimos este proceso hasta alcanzar la última localidad.
+
+type parnloc= tuple 
+    stops:nat 
+    loc: List of nat
+    end tuple
+
+fun cargar_combustible(A: Nat, d: Array[Nat]) ret (ans:parnloc)
+    var paradas: Nat
+    var localidades: List of nat 
+    var combustible_restante: Nat
+    var posicion: Nat
+    paradas:=0
+    localidades:= empty_list()
+    combustible_restante := 0
+    posicion:=0
+
+    for i := 1 to length(d) do
+        if d[i] > A then
+            error("No es posible completar el viaje. Distancia supera la autonomía.")
+        fi
+
+        // Si no podemos llegar a la siguiente localidad
+        if d[i] > combustible_restante then
+            // Hacer una parada para cargar combustible en la localidad actual
+            paradas := paradas + 1
+            append(localidades, posicion) // Registrar la localidad actual
+            combustible_restante := A // Llenar el tanque
+        fi
+
+        // Actualizar la cantidad de combustible restante
+        combustible_restante := combustible_restante - d[i]
+        posicion := posicion + 1
+    od
+
+   ans->stops:=paradas
+   ans->loc:=localidades
+end fun
+
+Explicación del Algoritmo
+
+    Inicialización:
+        Iniciamos con 0 paradas y el tanque vacío.
+
+    Recorrido de las localidades:
+        Verificamos si podemos llegar a la siguiente localidad (d[i]) con el combustible restante.
+        Si no es posible, paramos a cargar combustible en la localidad actual.
+
+    Registrar paradas:
+        Cada vez que hacemos una parada, registramos la localidad y llenamos el tanque.
+
+    Condición de imposibilidad:
+        Si alguna distancia es mayor que la autonomía A, no podemos completar el viaje.
+
+
+### Ejercicio 4
+
+En numerosas oportunidades se ha observado que cientos de ballenas nadan juntas hacia la costa y quedan
+varadas en la playa sin poder moverse. Algunos sostienen que se debe a una pérdida de orientación
+posiblemente causada por la contaminación sonora de los océanos que interferirı́a con su capacidad de
+inter-comunicación. En estos casos los equipos de rescate realizan enormes esfuerzos para regresarlas al
+interior del mar y salvar sus vidas.
+Se encuentran n ballenas varadas en una playa y se conocen los tiempos s1 , s2 , . . . , sn que cada ballena
+es capaz de sobrevivir hasta que la asista un equipo de rescate. Dar un algoritmo voraz que determine el
+orden en que deben ser rescatadas para salvar el mayor número posible de ellas, asumiendo que llevar una
+ballena mar adentro toma tiempo constante t, que hay un único equipo de rescate y que una ballena no
+muere mientras está siendo regresada mar adentro.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

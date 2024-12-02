@@ -339,26 +339,163 @@ constructors
 
 operations
 
-fun is_dict_empty(d:dict) ret b:bool
-{-Se fija si el diccionario está vacío-}
+    fun is_dict_empty(d:dict) ret b:bool
+        b:=d=null
+    end fun
 
-fun is_key_there(d:dict, k:T) ret b:bool
-{-Se fija si la clave k se encuentra en el diccionario-}
+    fun is_key_there(d:dict, k:T) ret b:bool
+        b:=false
+        if k=d->key then
+            b:=true
+        else
+            b:= is_key_there(d->left) or is_key_there(b->right)
+        fi
+    end fun
+    {-Se fija si la clave k se encuentra en el diccionario-}
 
-fun search_value(d:dict,k:t) ret v:T
-{-Busca el valor asociado a una clave k-} 
-{-PRE: Solo se puede aplicar si la misma se encuentra-}
+    fun search_value(d:dict,k:t) ret v:T
+        if d->key = k then 
+            v:=d->value
+        else
+            var aux:pointer to (K,V)
+            aux := d
+            while aux->key != k and aux != null do 
+                if k < aux->key then 
+                    aux:=aux->left
+                if k > aux->key then
+                    aux:=aux->right
+                else
+                    v := aux->value
+                fi
+            od
+    end fun
+    {-PRE: Solo se puede aplicar si la misma se encuentra-}
 
-proc delete_pair(in/out d:dict, in k:T)
-{-Una operación que dada una clave k, elimina el par 
-consistente de k y el valor asociado-}
-{-PRE: Solo se puede aplicar si la clave se encuentra 
-en el diccionario-}
+    proc delete_pair(in/out d:dict, in k:T)
+        if d = null then
+            error("La clave no se encuentra en el diccionario.")
+        fi
 
-fun dict_to_set(d:dict) ret s:set
-{-Una operación que devuelve un conjunto con todas 
-las claves contenidas en un diccionario-}
+        if k < d->key then
+            delete_pair(d->left, k)
+        elif k > d->key then
+            delete_pair(d->right, k)
+        else
+            // Caso 1: Nodo sin hijos
+            if d->left = NULL and d->right = NULL then
+                free(d)
+                d := NULL
+
+            // Caso 2: Nodo con un hijo
+            elif d->left = NULL then
+                var temp: pointer to (K, V)
+                temp := d
+                d := d->right
+                free(temp)
+            elif d->right = NULL then
+                var temp: pointer to (K, V)
+                temp := d
+                d := d->left
+                free(temp)
+
+            // Caso 3: Nodo con dos hijos
+            else
+                var temp: pointer to (K, V)
+                temp := d->right
+                // Buscar el nodo más pequeño en el subárbol derecho
+                while temp->left != NULL do
+                    temp := temp->left
+                od
+                // Reemplazar el nodo actual con la clave y valor del sucesor
+                d->key := temp->key
+                d->value := temp->value
+                // Eliminar el sucesor
+                delete_pair(d->right, temp->key)
+            fi
+        fi
+    end proc
+    {-PRE: Solo se puede aplicar si la clave se encuentra 
+    en el diccionario-}
+
+    fun dict_to_set(d:dict) ret s:set
+        var s: set
+        s := empty_set()
+        inorder_traversal(d, s)
+    end fun
+    {-Una operación que devuelve un conjunto con todas 
+    las claves contenidas en un diccionario-}
+
+    proc inorder_traversal(node: pointer to (K, V), in/out s: set)
+        if node = NULL then
+            return
+        fi
+        inorder_traversal(node->left, s)
+        add_to_set(s, node->key)
+        inorder_traversal(node->right, s)
+    end proc
 
 
 
 
+
+
+
+### Ejercicio 6
+
+En un ABB cuyos nodos poseen valores entre 1 y 1000, interesa encontrar el número 363. ¿Cuáles
+de las siguientes secuencias no puede ser una secuencia de nodos examinados según el algoritmo de
+búsqueda? ¿Por qué?
+
+(a) 2, 252, 401, 398, 330, 344, 397, 363.
+            2 
+                252 
+                        401 
+                     398 
+                330 
+                    344 
+                        397
+                    363
+
+
+(b) 924, 220, 911, 244, 898, 258, 362, 363.
+
+        924 
+    220 
+        911 
+    244 
+        898 
+    258 
+        362 
+            363
+
+(c) 925, 202, 911, 240, 912, 245, 363.
+
+                925 
+            202
+                911 
+            240 
+                912  // Acá falla porque está en la rama
+                        izquierda de 911 pero es mayor
+
+(d) 2, 399, 387, 219, 266, 382, 381, 278, 363.  //siguen la misma lógica todos los test
+(e) 935, 278, 347, 621, 299, 392, 358, 363.
+
+### Ejercicio 7
+
+Dada la secuencia de números 23, 35, 49, 51, 41, 25, 50, 43, 55, 15, 47 y 37, determinar el ABB que resulta
+al insertarlos exactamente en ese orden a partir del ABB vacı́o.
+
+
+
+                                                23
+                                          15            35 
+                                                 25              49  
+                                                        41                 51
+                                                     37     43         50      55
+                                                                47
+
+
+### Ejercicio 8 
+8. Determinar al menos dos secuencias de inserciones que den lugar al siguiente ABB: (ver pdf)
+
+23,10, 35,25,33,52,49,53,6,4,19,15,11,18 
