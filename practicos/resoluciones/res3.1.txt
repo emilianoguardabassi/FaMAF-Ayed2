@@ -251,18 +251,95 @@ Política del algoritmo:
 
 Algoritmo:
 
+type viaje = tuple 
+    partida:nat  //asumimos que representamos fechas como naturales
+    llegada:nat
+    end tuple
+
+fun tiempo_viaje(v:viaje) ret delta:nat 
+    delta:=v.llegada-v.partida
+end fun
+
+//bubble sort
+proc sort(in/out a:array of viaje)
+    for i := 1 to length(viajes) - 1 do
+        for j := 1 to length(viajes) - i do
+            if viajes[j].partida > viajes[j + 1].partida or
+               (viajes[j].partida == viajes[j + 1].partida and
+                (viajes[j].llegada - viajes[j].partida) > (viajes[j + 1].llegada - viajes[j + 1].partida)) then
+                swap(viajes[j], viajes[j + 1])
+            fi
+        od
+    od
+end proc
+
+fun prestar_telefono(amigos:nat, viajes[1..amigos]:array of viaje,dia:nat) ret prestamos:nat
+    var tiempo_celular:nat 
+    tiempo_celular := 0
+    prestamos:=0
+    sort(viajes) //asumimos implementada sort (tiempo partida y delta)
+
+    for i:=1 to amigos do 
+        if tiempo_celular < viajes[i.partida] then
+            tiempo_celular := viajes[i].llegada + dia
+            prestamos:=prestamos + 1
+        fi
+    od
+end fun
+
+
+
+### Ejercicio 6
+
+Para obtener las mejores facturas y medialunas, es fundamental abrir el horno el menor número de veces
+posible. Por supuesto que no siempre es fácil ya que no hay que sacar nada del horno demasiado temprano,
+porque queda cruda la masa, ni demasiado tarde, porque se quema.
+En el horno se encuentran n piezas de panaderı́a (facturas, medialunas, etc). Cada pieza i que se encuentra
+en el horno tiene un tiempo mı́nimo necesario de cocción ti y un tiempo máximo admisible de cocción Ti .
+Si se la extrae del horno antes de ti quedará cruda y si se la extrae después de Ti se quemará.
+Asumiendo que abrir el horno y extraer piezas de él no insume tiempo, y que ti ≤ Ti para todo i ∈
+{1, . . . , n}, ¿qué criterio utilizarı́a un algoritmo voraz para extraer todas las piezas del horno en perfecto
+estado (ni crudas ni quemadas), abriendo el horno el menor número de veces posible? Implementarlo.
 
 
 
 
 
+Planteamiento:
+    Entranda: n piezas de panadería, tiempo mínimo(ti) y máximo de cocción(Ti)
+
+    Salida: numero de veces abierto el horno
+
+    Estructuras de datos: 
+        Propuesta1: Usar una tupla con el intervalo ti y Ti y un id, y un set que las contenga a todas.
+        Propuesta2: Usar una tupla con el intervalo ti y Ti y un id, y un array que los contenga.
+
+Condiciones: añadir y extraer piezas del horno no consume tiempo. ti<=Ti para todo i en {1,...,n}
+
+Política del algoritmo: 
+                Abrir el horno cuándo haya el mayor número de intersecciones de tiempo en el 
+                que las piezas estén bien cocidas, sin que ninguna se queme ni sacando crudas.
+                Notar que si se queman las perdemos, pero si están crudas las podemos dejar 
+                más tiempo.
+                Idea: tomar el mínimo de todas las Ti y hacer la interseccion con todas las 
+                ti que sucedan antes que ese Ti. Luego descartar todas esos elementos del 
+                conjunto y sumar una apertura del horno.
+
+Algoritmo:
+Propuesta1:
+
+type factura = tuple 
+    id:string //no sé si están implementadas las strings pero asumimos que sí.
+    minimo:nat 
+    maximo:nat
+    end tuple
+
+type conjunto = set of factura
 
 
+fun optimo_horno(facturas:conjunto) ret h:nat
 
-
-
-
-
+end fun
 
 
 
