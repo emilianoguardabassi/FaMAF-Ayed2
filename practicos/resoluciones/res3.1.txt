@@ -326,7 +326,7 @@ Política del algoritmo:
                 conjunto y sumar una apertura del horno.
 
 Algoritmo:
-Propuesta1:
+Propuesta2:
 
 type factura = tuple 
     id:string //no sé si están implementadas las strings pero asumimos que sí.
@@ -334,20 +334,196 @@ type factura = tuple
     maximo:nat
     end tuple
 
-type conjunto = set of factura
 
+fun optimo_horno(facturas:array[1..n] of factura) ret tiempos_abierto:nat
+    var ultimo_tiempo: nat 
+    ultimo_tiempo:=0
+    tiempos_abierto:= 0
+    sort(facturas)  //sorting basandonos en Ti, más chico a más grande
 
-fun optimo_horno(facturas:conjunto) ret h:nat
-
+    for i from 1 to n do
+        if facturas[i].minimo > ultimo_tiempo then
+            // Abrir el horno en T_i de la pieza actual
+            tiempos_abierto := tiempos_abierto + 1
+            ultimo_tiempo := facturas[i].maximo
+        fi
+    od
 end fun
 
 
 
 
+### Ejercicio 7
+
+Un submarino averiado descansa en el fondo del océano con n sobrevivientes en su interior. Se conocen las
+cantidades c1 , . . . , cn de oxı́geno que cada uno de ellos consume por minuto. El rescate de sobrevivientes
+se puede realizar de a uno por vez, y cada operación de rescate lleva t minutos.
+
+(a)
+Escribir un algoritmo que determine el orden en que deben rescatarse los sobrevivientes para salvar
+al mayor número posible de ellos antes de que se agote el total C de oxı́geno.
+
+(b)
+Modificar la solución anterior suponiendo que por cada operación de rescate se puede llevar a la
+superficie a m sobrevivientes (con m ≤ n).
+
+Resoluciones:
+a)
+
+
+fun rescate_uno_por_vez(c: array[1..n] of nat, t: nat, C: nat) ret sobrevivientes: nat
+    // c: consumos de oxígeno de los sobrevivientes
+    // t: tiempo por rescate
+    // C: oxígeno total disponible
+
+    var oxigeno_requerido: nat
+    var oxigeno_restante:nat
+    var sobrevivientes:nat
+    oxigeno_requerido:=0
+    oxigeno_restante:=C 
+    sobrevivientes:=0
+    sort(c)  // Ordenar consumos en orden ascendente
+
+    for i from 1 to n do
+        oxigeno_requerido := t * (n - i + 1) * c[i]
+        if oxigeno_requerido <= oxigeno_restante then
+            oxigeno_restante := oxigeno_restante - oxigeno_requerido
+            sobrevivientes := sobrevivientes + 1
+        else
+            break
+        fi
+    od
+
+end fun
+
+
+b) 
+
+
+fun rescate_grupos(c: array[1..n] of nat, t: nat, C: nat, m: nat) ret sobrevivientes: nat
+    // c: consumos de oxígeno de los sobrevivientes
+    // t: tiempo por rescate
+    // C: oxígeno total disponible
+    // m: cantidad de sobrevivientes rescatados por operación
+
+    var oxigeno_restante:nat 
+    var sobrevivientes:nat
+    var i:nat
+    oxigeno_restante := C
+    sobrevivientes := 0
+    i := 1
+    sort(c)  // Ordenar consumos en orden ascendente
+    var grupo:nat
+    var oxigeno_requerido:nat
+
+    while i <= n do
+        // Calcular el oxígeno requerido para este grupo
+        grupo := min(m, n - i + 1)
+        oxigeno_requerido := t * sum(c[i..i+grupo-1])
+        
+        if oxigeno_requerido <= oxigeno_restante then
+            oxigeno_restante := oxigeno_restante - oxigeno_requerido
+            sobrevivientes := sobrevivientes + grupo
+            i := i + grupo
+        else
+            break
+        fi
+    od
+end fun
 
 
 
 
+### Ejercicio 8 
+
+Usted vive en la montaña, es invierno, y hace mucho frı́o. Son las 10 de la noche. Tiene una voraz estufa
+a leña y n troncos de distintas clases de madera. Todos los troncos son del mismo tamaño y en la estufa
+entra solo uno por vez. Cada tronco i es capaz de irradiar una temperatura ki mientras se quema, y
+dura una cantidad ti de minutos encendido dentro de la estufa. Se requiere encontrar el orden en que
+se utilizarán la menor cantidad posible de troncos a quemar entre las 22 y las 12 hs del dı́a siguiente,
+asegurando que entre las 22 y las 6 la estufa irradie constantemente una temperatura no menor a K1; y
+entre las 6 y las 12 am, una temperatura no menor a K2.
+
+
+type Tronco = tuple
+    k: nat      // Temperatura generada
+    t: nat      // Tiempo de duración
+end tuple
+
+fun calcular_troncos(troncos: array[1..n] of Tronco, K1: nat, K2: nat) ret total_troncos: nat
+    // Ordenar troncos por eficiencia (descendente)
+    sort(troncos, key=lambda tronco: tronco.k / tronco.t, reverse=True)
+
+    total_troncos := 0
+
+    // Función auxiliar para cubrir un intervalo
+
+    // Cubrir el intervalo de 22:00 a 6:00 (K1)
+    cubrir_intervalo(K1, 480,troncos, total_troncos)
+
+    // Cubrir el intervalo de 6:00 a 12:00 (K2)
+    cubrir_intervalo(K2, 360, troncos, total_troncos)
+
+end fun
 
 
 
+proc cubrir_intervalo(in temperatura_minima: nat, in duracion: nat,in troncos:array[1..n] of troncos, in/out total_troncos)
+    var tiempo_restante:nat
+    var i:nat
+    var tiempo_usado
+    tiempo_restante:=duracion 
+    i:=1
+
+    while tiempo_restante > 0 do
+        f i > n then
+            error("No hay suficientes troncos para cumplir la restricción.")
+        fi
+
+        tronco := troncos[i]
+        tiempo_usado := min(tiempo_restante, tronco.t)
+
+        if tiempo_usado * tronco.k < tiempo_restante * temperatura_minima then
+            error("No es posible mantener la temperatura requerida.")
+        fi
+
+        tiempo_restante := tiempo_restante - tiempo_usado
+        total_troncos := total_troncos + 1
+        i := i + 1
+    od
+end proc
+
+### Ejercicio 9 
+
+
+(sobredosis de limonada) Es viernes a las 18 y usted tiene ganas de tomar limonada con sus amigos. Hay
+n bares cerca, donde cada bar i tiene un precio Pi de la pinta de limonada y un horario de happy hour Hi ,
+medido en horas a partir de las 18 (por ejemplo, si el happy hour del bar i es hasta las 19, entonces Hi
+= 1), en el cual la pinta costará un 50% menos. Usted toma una cantidad fija de 2 pintas por hora y no
+se considera el tiempo de moverse de un bar a otro. Se desea obtener el menor dinero posible que usted
+puede gastar para tomar limonada desde las 18 hasta las 02 am (es decir que usted tomará 16 pintas)
+eligiendo en cada hora el bar que más le convenga.
+
+fun calcular_gasto(n: nat, P: array[1..n] of float, H: array[1..n] of nat) ret gasto_total: float
+    var menor_precio:float
+    var precio_actual:float
+    gasto_total:= 0.0
+
+    for hora from 1 to 8 do
+        menor_precio := infinito
+        for i from 1 to n do
+            if hora <= H[i] then
+                precio_actual := P[i] / 2  // Happy hour
+            else
+                precio_actual := P[i]      // Precio regular
+            fi
+            if precio_actual < menor_precio then
+                menor_precio := precio_actual
+            fi
+        od
+        gasto_total := gasto_total + menor_precio * 2  // 2 pintas por hora
+    od
+
+end fun
+
+últimos ejercicios hechos con ayuda de IA por cuestiones de tiempo
