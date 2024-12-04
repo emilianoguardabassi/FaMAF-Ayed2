@@ -1,0 +1,392 @@
+### Ejercicio 1:
+
+Modifique el código del algoritmo que resuelve el problema de la moneda utilizando backtracking,
+de manera que devuelva qué monedas se utilizan, en vez de sólo la cantidad.
+
+
+fun monedas_backtracking(monedas: array[1..k] of nat, valor: nat) ret (min_cantidad: nat, combinacion: array of nat)
+    var mejor_cantidad := infinito
+    var mejor_combinacion: array of nat := empty_array()
+    var seleccionadas: array of nat := empty_array()
+
+    proc backtrack(restante: nat, usadas: nat)
+        if restante == 0 then
+            // Solución encontrada, actualizar si es mejor
+            if usadas < mejor_cantidad then
+                mejor_cantidad := usadas
+                mejor_combinacion := copy(seleccionadas)
+            fi
+            return
+        fi
+
+        if usadas >= mejor_cantidad or restante < 0 then
+            return
+        fi
+
+        for moneda in monedas do
+            // Elegir la moneda actual
+            add(seleccionadas, moneda)
+            backtrack(restante - moneda, usadas + 1)
+            remove_last(seleccionadas)  // Retroceder
+        od
+    end proc
+
+    // Llamada inicial
+    backtrack(valor, 0)
+    return (mejor_cantidad, mejor_combinacion)
+end fun
+
+
+
+### Ejercicio 2:
+
+En un extraño paı́s las denominaciones de la moneda son 15, 23 y 29, un turista quiere comprar
+un recuerdo pero también quiere conservar el mayor número de monedas posibles. Los recuerdos
+cuestan 68, 74, 75, 83, 88 y 89. Asumiendo que tiene suficientes monedas para comprar cualquiera
+de ellos, ¿cuál de ellos elegirá? ¿qué monedas utilizará para pagarlo? Justificar claramente y
+mencionar el método utilizado.
+
+
+
+
+fun monedas_minimas(monedas: array of nat, precio: nat) ret (min_monedas: nat, combinacion: array of nat)
+    var mejor_cantidad := infinito
+    var mejor_combinacion := empty_array()
+
+    backtrack(precio, 0, empty_array())
+
+    return (mejor_cantidad, mejor_combinacion)
+end fun
+
+    proc backtrack(restante: nat, usadas: nat, combinacion_actual: array of nat)
+        if restante == 0 then
+            if usadas < mejor_cantidad then
+                mejor_cantidad := usadas
+                mejor_combinacion := copy(combinacion_actual)
+            fi
+            return
+        fi
+        if restante < 0 or usadas >= mejor_cantidad then
+            return
+        fi
+        for moneda in monedas do
+            add(combinacion_actual, moneda)
+            backtrack(restante - moneda, usadas + 1, combinacion_actual)
+            remove_last(combinacion_actual)
+        od
+    end proc
+
+
+Recuerdo elegido: 75
+Monedas utilizadas: [23,23,29]
+Número de monedas: 3
+
+------------------------------------------------------------------------------------------
+Para cada uno de los siguientes ejercicios:
+• Identifique qué parámetros debe tomar la función recursiva que resuelve el problema.
+• Describa con palabras qué calcula la misma, en función de sus argumentos.
+• Defina la función recursiva en notación matemática y opcionalmente en código.
+• Indique cuál es la llamada principal que obtiene el resultado pedido en el ejercicio.
+------------------------------------------------------------------------------------------
+
+### Ejericio 3:
+Una panaderı́a recibe n pedidos por importes m1 , . . . , mn , pero sólo queda en depósito una cantidad
+H de harina en buen estado. Sabiendo que los pedidos requieren una cantidad h1 , . . . , hn de harina
+(respectivamente), determinar el máximo importe que es posible obtener con la harina disponible.
+
+Resolución:
+
+    Entradas: 
+        n:numeros de pedidos 
+        m:=[m1,...mn]: importes de los pedidos 
+        h:=[h2,..,hn]: cantidad de harina requerida para cada pedido 
+        H:Cantidad total de harina disponible
+
+    Salida:
+        El máximo importe que se puede obtener sin exceder la harina disponible
+
+Definimos el Problema:
+    Cada pedido tiene un importe m[i] y requiere una cantidad de harina h[i].
+    Necesitamos encontrar el subconjunto de pedidos tal que:
+        La suma de las harinas ≤ H.
+        El importe total es máximo.
+
+Uso de Backtracking:
+    Partimos desde el primer pedido e intentamos incluirlo o no en la solución.
+    Exploramos todas las combinaciones posibles de inclusión/exclusión de pedidos.
+    Utilizamos poda para descartar ramas que no puedan mejorar la solución actual.
+
+Optimización (Poda):
+    Si la cantidad de harina utilizada supera H, descartamos esa rama.
+    Si el valor acumulado actual más el valor de los pedidos restantes no supera el mejor valor encontrado hasta ahora, descartamos esa rama.
+
+
+fun max_importe_backtracking(n: nat, m: array[1..n] of nat, h: array[1..n] of nat, H: nat) ret max_importe: nat
+    var mejor_importe := 0  // Mejor importe encontrado
+    var harina_usada := 0  // Cantidad de harina usada
+    var importe_actual := 0  // Importe actual
+    var solucion_actual: array of nat := empty_array()
+    var mejor_solucion: array of nat := empty_array()
+
+    // Llamada inicial
+    backtrack(1)
+
+    return mejor_importe, mejor_solucion
+end fun
+
+proc backtrack(i: nat)
+    if harina_usada > H then
+        return  // Poda: Excede la cantidad de harina disponible
+    fi
+
+    if i > n then
+        if importe_actual > mejor_importe then
+            mejor_importe := importe_actual
+            mejor_solucion := copy(solucion_actual)
+        fi
+        return
+    fi
+
+    // Caso 1: No incluir el pedido i
+    backtrack(i + 1)
+
+    // Caso 2: Incluir el pedido i
+    add(solucion_actual, i)
+    harina_usada := harina_usada + h[i]
+    importe_actual := importe_actual + m[i]
+
+    backtrack(i + 1)
+
+    // Deshacer la elección (backtracking)
+    remove_last(solucion_actual)
+    harina_usada := harina_usada - h[i]
+    importe_actual := importe_actual - m[i]
+end proc
+
+
+
+
+### Ejercicio 4
+
+Usted se encuentra en un globo aerostático sobrevolando el océano cuando descubre que empieza a
+perder altura porque la lona está levemente dañada. Tiene consigo n objetos cuyos pesos p1 , . . . , pn
+y valores v1 , . . . , vn conoce. Si se desprende de al menos P kilogramos logrará recuperar altura y
+llegar a tierra firme, y afortunadamente la suma de los pesos de los objetos supera holgadamente
+P . ¿Cuál es el menor valor total de los objetos que necesita arrojar para llegar sano y salvo a la
+costa?
+
+
+
+El enunciado:
+n objectos con pesos p1,p2,....,pn y valores v1,v2,...,vn
+P es el peso que debemos perder para que el globo no se caiga.
+Determinar el MENOR valor total de los objetos que debo tirar para que el globo no se caiga.
+
+
+Antes de resolverlo, pensemos un ejemplo.
+
+4 objetos
+p1= 3   v1= 10
+p2= 5   v2= 8
+p3= 2   v3=9
+p4= 3   v4=6
+
+P = 7
+
+¿cómo resolvemos el problema usando backtracking?
+tengo que probar TODAS las combinaciones
+
+Tiro todo. Pierdo 13 kilos de peso, y 33 “puntos” de valor.
+no tiro nada. Pierdo 0 kilos de peso y 0 “puntos” de valor, pero el globo se cae.
+un montón más que NO SON SOLUCION, porque el globo se cae.
+…..
+tirar 1 y 2. Pierdo 8 kilos, y 18 “puntos” de valor.
+tirar 1,2 y 3. Pierdo 10 kilos, y 27 “puntos” de valor.
+tirar 1,3 y 4. Pierdo 8 kilos, y 25 “puntos” de valor.
+tirar 2 y 3. Pierdo 7 kilos,  17 “puntos” de valor.
+tirar 2, 3 y 4. Pierdo 10 kilos,  23 “puntos” de valor.
+tirar 2 y 4. Pierdo 8 kilos, 14 “puntos” de valor.
+
+Backtracking prueba TODAS las posibilidades y se queda con la que cumple con el criterio óptimo, en este caso, con la opción que tiene valor de pérdida mínimo. O sea
+Tirar 2 y 4, perdiendo 14 puntos de valor.
+
+Ahora sí, resolvamos el problema con un algoritmo recursivo.
+
+Identifiquemos qué parámetros toma la función recursiva, y qué calcula en función de esos parámetros.
+IMPORTANTE: el algoritmo deberá obtener el MENOR valor tirado, pero no qué objetos tiramos.
+
+definiré una función
+
+	globo(i,h) = “el menor valor posible del que debo desprenderme tirando algunos de los objetos entre 1 e i, de manera tal que su peso sea mayor o igual a h”
+
+si entendemos la función que queremos definir, digamos cuál es la “llamada” a esta función que resuelve el problema del ejercicio.
+
+globo(n,P)
+
+
+Definamos la función globo
+
+
+globo(i,h) | si h <= 0       ----> 0
+           | si i = 0, h > 0 ---->  + infinito
+           | si i > 0, h > 0 ----> 
+                             -- probemos tirar el objeto
+                             min( vi + globo(i-1,h-pi),
+                             -- probemos NO tirar el objeto
+                             globo(i-1,h) )
+Testeo "rápido" con:
+p1 = 2
+p2 = 4
+p3 = 10
+
+
+P = 8
+----
+
+globo(3,8)
+
+=
+
+min(v3 + globo(2, -2), globo(2, 8))
+
+= 
+
+min(v3, globo(2, 8))
+
+=
+
+min(v3, min(v2 + globo(1, 4), globo(1, 8)))
+
+=
+
+min(v3, min(v2 + min(v1 + globo(0, 2), globo(0, 4)), globo(1, 8)))
+
+=
+
+min(v3, globo(1, 8))
+
+=
+min(v3, +infinito)  -- Nos salteamos pasos, pero ya nos damos cuenta que pi es 2 (no voy a llegar nunca a tirar 8kg)
+
+= 
+
+v3
+
+
+### Ejericicio 5:
+
+Sus amigos quedaron encantados con el teléfono satelital, para las próximas vacaciones ofrecen
+pagarle un alquiler por él. Además del dı́a de partida y de regreso (pi y ri ) cada amigo ofrece un
+monto mi por dı́a. Determinar el máximo valor alcanzable alquilando el teléfono.
+
+
+
+Tenemos: n amigos, cada uno tiene un día de partida p_i, un día de regreso r_i, y paga m_i por día.
+Queremos: maximizar la plata ganada.
+Debemos definir una función recursiva que me calcule soluciones parciales al problema.
+rataColuda(d) = “máxima plata que puedo ganar prestando el teléfono a partir del día d hasta el último día.”
+
+Llamada principal: rataColuda(0)
+Definición recursiva de la función (o sea, el programa).
+
+
+rataColuda(d) = “máxima plata que puedo ganar prestando el teléfono a partir del día d hasta el último día.”
+
+2. Definición recursiva de la función (o sea, el programa).
+rataColuda(d) = ( si ∀i: p_i < d    → 0
+                 | si no       →  rataColuda(d+1)  {- el dia d no lo presto -}
+                                              max
+                               maximo_{i tal que p_i = d} (
+                                        m_i * (r_i - p_i + 1) + rataColuda(r_i+1) )
+                                     {- se lo presto al amigo i  -}
+                 )
+
+p1=1 r1=2 m1=3
+p2=3 r2=4 m2=2
+p3=4 r3=7 m3=5
+p4=2 r4=8 m4=6
+p5=6 r5=8 m5=8
+p6=4 r6=8 m6=5
+
+rataColuda(0) 
+  = rataColuda(1)  {- no se va nadie el dia 0 -}
+  = rataColuda(2)  {- no lo alquilo -} 
+        max 
+     (2*3 + rataColuda(3))  {- lo alquilo al 1 -}
+----------------------
+rataColuda(2) = rataColuda(3) max (7*6 + rataColuda(9) )
+---------------------- (LLAMADAS DUPLICADAS)
+
+rataColuda(3) = rataColuda(4) max (2*2 + rataColuda(5))
+----------------------
+rataColuda(4) = rataColuda(5) max 
+    (4*5 + rataColuda(8)) max     {- amigo 3 -}
+    (5*5 + rataColuda(9))             {- amigo 6 -}
+----------------------
+rataColuda(5) = rataColuda(6)
+----------------------
+rataColuda(6) = rataColuda(7) max (3*8 + rataColuda(9))
+----------------------
+rataColuda(7)  = 0
+rataColuda(8) = 0
+rataColuda(9) = 0
+Ya llegamos hasta las hojas de este árbol de llamadas recursivas. Ahora resolvemos hacia arriba.
+
+
+
+p1=1 r1=2 m1=3
+p2=3 r2=4 m2=2
+p3=4 r3=7 m3=5
+p4=2 r4=8 m4=6
+p5=6 r5=8 m5=8
+p6=4 r6=8 m6=5
+
+rataColuda(0) 
+  = rataColuda(1)  {- no se va nadie el dia 0 -}
+  = 42  {- amigo 4  -} 
+        max 
+     (2*3 + 28)  {- amigos 1, 2 y 5 -}
+  = 42  {- amigo 4 -}
+----------------------
+rataColuda(2) = 28 {- amigos 2 y 5 -}
+    max 42 {- amigo 4 -}
+   = 42 {- amigo 4 -}
+----------------------
+
+rataColuda(3) = 25  {- amigo 6-}
+   max (2*2 + 24)      {- amigos 2 y 5 -}
+   = 28  {- amigos 2 y 5 -}
+----------------------
+rataColuda(4) = 24 max  {- amigo 5 -}
+    (4*5 + 0) max     {- amigo 3 -}
+    (5*5 + 0)             {- amigo 6 -}
+   = 25 {- amigo 6 -}
+----------------------
+rataColuda(5) = 24 {- amigo 5-}
+----------------------
+rataColuda(6) = 0 max (3*8 + 0)
+                       = 24   {- amigo 5 -}
+----------------------
+rataColuda(7)  = 0
+rataColuda(8) = 0
+rataColuda(9) = 0
+
+Resultado final 42
+
+
+
+¿Qué complejidad algorítmica tiene este programa? En cada paso tengo posiblemente varias llamadas 
+recursivas (al estilo fib que tiene siempre dos). Esto me crea un arbol de llamadas que crece exponencialmente.
+
+¿Se puede hace más rápido? Sí, hay muchas llamadas en ese árbol que están duplicadas.
+Eso hicimos en nuestras cuentas y aceleramos mucho el proceso.
+
+¿A qué complejidad pudimos bajarlo? A lineal. Hicimos un cómputo por cada día.
+
+### Ejercicio 6:
+
+Un artesano utiliza materia prima de dos tipos: A y B. Dispone de una cantidad M A y M B de
+cada una de ellas. Tiene a su vez pedidos de fabricar n productos p1 , . . . , pn (uno de cada uno).
+Cada uno de ellos tiene un valor de venta v1 , . . . , vn y requiere para su elaboración cantidades
+a1 , . . . , an de materia prima de tipo A y b1 , . . . , bn de materia prima de tipo B. ¿Cuál es el mayor
+valor alcanzable con las cantidades de materia prima disponible?
