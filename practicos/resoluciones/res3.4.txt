@@ -1,0 +1,47 @@
+### Ejercicio 1: 
+
+Dar una definición de la función cambio utilizando la técnica de programación dinámica a partir
+de la siguiente definición recursiva (backtracking):
+
+cambio(i,j)= 
+            | 0                                       si j = 0
+            | inf                                     si j > 0 and i = 0
+            | min_q(q + cambio(i - 1, j - q * d_i))     si j > 0 and i > 0 
+
+q pertenece {0,1,..,j/di}
+
+
+fun cambio(D: Array[1..n] of nat, j : nat) ret res Nat
+
+    {- Cada celda de la matriz dp[i][k] representa la minima cantidad de
+    monedas necesarias para alcanzar la cantidad "k" usando las
+    primeras "i" monedas del arreglo "D" -}
+
+    var dp[0..n, 0..j] of nat {- Mi matriz que representa cada estado -}
+    var temp : nat
+
+    {- Llenamos la tabla con los casos bases -}
+    for i:= 0 to n do {- Primer caso base si j = 0 -}
+        dp[i][0] = 0
+    od
+    for k:= 0 to j do {- Segundo caso base si i = 0 -}
+        dp[0][j] = INF
+    od
+
+    {- Llenamos la matriz dp -}
+    for i:= 0 to n do {- Recorremos las monedas disponibles -}
+        for k:= 0 to j do {- Recorre la cantidad de dinero desde 1 hasta j -}
+            temp := dp[i][k]
+            for q:= 0 to j/D[i] do {- Todas las posibles cantidad de monedas -}
+                temp = min(temp, temp + dp[i-1, j-q * D[i]])
+            od
+            dp[i][k] = temp
+        od
+    od
+
+    {- Representa el minimo numero de monedas necesarias utilizando
+    todas las monedas disponibles "n" para alcanzar la cantidad "j" -}
+
+    res := dp[n, j]
+
+end fun

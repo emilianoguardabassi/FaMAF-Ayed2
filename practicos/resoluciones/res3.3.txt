@@ -390,3 +390,241 @@ cada una de ellas. Tiene a su vez pedidos de fabricar n productos p1 , . . . , p
 Cada uno de ellos tiene un valor de venta v1 , . . . , vn y requiere para su elaboración cantidades
 a1 , . . . , an de materia prima de tipo A y b1 , . . . , bn de materia prima de tipo B. ¿Cuál es el mayor
 valor alcanzable con las cantidades de materia prima disponible?
+
+Resolución:
+Materia prima: A y B 
+Cantidad MA y MB
+Fabricar n productos: p1,..,pn 
+Valor de venta: v1,..,vn 
+Elaborar en cantidades a1,..,an de materia prima tipo A y b1,..,bn de materia prima tipo B 
+¿Cuál es el mayor valor alcanzable con las cantidades de materia prima disponible?
+
+
+type producto = tuple
+    valor: nat 
+    materias: materia
+    end tuple
+
+type materia = tuple 
+    ma:nat 
+    mb:nat 
+    end tuple
+
+
+fun max_valor_backtracking(in MA, MB: nat, in a: array[1..n] of producto, in cantidad: nat) ret max_valor: nat
+    max_valor := 0
+
+    for i := 1 to cantidad do
+        if a[i].materias.ma > MA or a[i].materias.mb > MB then
+            skip  // No podemos fabricar este producto
+        else
+            // Elegimos fabricar o no fabricar el producto i
+            max_valor := max(max_valor, 
+                             a[i].valor + max_valor_backtracking(MA - a[i].materias.ma, 
+                                                                MB - a[i].materias.mb, 
+                                                                a, cantidad))
+        fi
+    od
+end fun
+
+// Ugly ass code, dont look at it. it is not ok
+
+// equivalente en c (aunque distinto)
+
+#include <stdio.h>
+
+// Estructuras para representar productos y sus requisitos de materia prima
+typedef struct {
+    int ma; // Materia prima A requerida
+    int mb; // Materia prima B requerida
+} Materia;
+
+typedef struct {
+    int valor;     // Valor del producto
+    Materia materias; // Requerimientos de materia prima
+} Producto;
+
+// Función de backtracking
+int max_valor_backtracking(int MA, int MB, Producto productos[], int cantidad, int idx) {
+    // Caso base: No quedan productos por evaluar
+    if (idx >= cantidad) {
+        return 0;
+    }
+
+    // No fabricar este producto
+    int valor_sin_producto = max_valor_backtracking(MA, MB, productos, cantidad, idx + 1);
+
+    // Fabricar este producto si es posible
+    int valor_con_producto = 0;
+    if (productos[idx].materias.ma <= MA && productos[idx].materias.mb <= MB) {
+        valor_con_producto = productos[idx].valor +
+                             max_valor_backtracking(
+                                 MA - productos[idx].materias.ma,
+                                 MB - productos[idx].materias.mb,
+                                 productos, cantidad, idx + 1);
+    }
+
+    // Devolver el máximo entre fabricar o no fabricar este producto
+    return (valor_sin_producto > valor_con_producto) ? valor_sin_producto : valor_con_producto;
+}
+
+// Programa principal
+int main() {
+    // Materias primas disponibles
+    int MA = 50; // Cantidad disponible de materia prima A
+    int MB = 25; // Cantidad disponible de materia prima B
+
+    // Lista de productos
+    Producto productos[] = {
+        {60, {10, 5}},  // Producto 1: valor = 60, ma = 10, mb = 5
+        {100, {20, 10}}, // Producto 2: valor = 100, ma = 20, mb = 10
+        {120, {25, 13}}, // Producto 3: valor = 120, ma = 30, mb = 15
+        {100, {5, 2}}     // Producto 4: valor = 30, ma = 5, mb = 2
+    };
+
+    int cantidad = sizeof(productos) / sizeof(productos[0]);
+
+    // Calcular el valor máximo alcanzable
+    int max_valor = max_valor_backtracking(MA, MB, productos, cantidad, 0);
+
+    // Mostrar el resultado
+    printf("El valor máximo alcanzable es: %d\n", max_valor);
+
+    return 0;
+}
+
+Parámetros de la función: En este caso voy a usar los siguientes parámetros:
+
+“iˮ para representar la cantidad actual de productos, vi el valor, ai la cantidad de materia prima que necesita de tipo A y bi la cantidad de materia
+prima de tipo B.
+
+“jˮ representa la cantidad actual de materia prima disponible de tipo “Aˮ
+
+“kˮ representa la cantidad actual de materia prima disponible de tipo “Bˮ
+
+Descripción de la función recursiva: la función recursiva maxValorDisp(i, j, k) representa el máximo valor alcanzable con “iˮ pedidos, “jˮ materia prima
+A y “kˮ materia prima B.
+
+Función recursiva:
+
+maxValorDisp(i,j,k)= 
+                    | 0 si i=0
+                    | maxValorDisp(i-1,j,k) si j<ai V k<bi 
+                    | max(maxValorDisp(i-1,j-ai,k-bi)+vi, maxValorDisp(i-1,j,k)) si j>=ai V k>=bi
+
+Llamada principal: maxValorDisp(n, MA, MB) mayor valor alcanzable con “nˮ pedidos y MA materia prima de tipo A y MB materia prima de tip “Bˮ
+
+
+
+### Ejercicio 7:
+
+En el problema de la mochila se buscaba el máximo valor alcanzable al seleccionar entre n objetos
+de valores v1 , . . . , vn y pesos w1 , . . . , wn , respectivamente, una combinación de ellos que quepa en
+una mochila de capacidad W. Si se tienen dos mochilas con capacidades W1 y W2 , ¿cuál es el valor
+máximo alcanzable al seleccionar objetos para cargar en ambas mochilas?
+
+n objectos
+valores: v1,..,vn 
+pesos: w1,..,wn
+Capacidad: W1, W2
+
+type objecto = tuple 
+    valor: nat 
+    peso: nat
+    end tuple
+
+Planteemoslo en psedohaskell:
+
+max_val =
+        | 0 //si i > n
+        | max_val(i+1,W1,W2) //si wn > W1 and wn > W2 
+        | vn + max_val(i + 1, W1-wn, W2) //si wn > W2
+        | vn + max_val(i + 1, W1, W2-wn) //si wn > W1
+        | vn + max(max_val(i + 1, W1-wn, W2),max_val(i + 1, W1, W2-wn)) //caso recursivo
+
+donde i es el indice del arreglo de objetos
+
+type objecto = tuple 
+    valor: nat 
+    peso: nat
+    end tuple
+
+fun back_max_val(objetos:array[1..n] of objeto, i:nat, W1:nat, W2:nat) ret valor:nat
+
+    if i > n then 
+        valor := 0
+
+    elif objectos[i].peso > W1 and objectos[i].peso > W2 then
+        valor := back_max_val(objectos, i + 1, W1, W2)
+
+    elif objectos[i].peso > W2 then 
+        valor := max(
+                    objectos[i].valor + back_max_val(objectos, i + 1, W1-objetos[i].peso, W2),
+                    back_max_val(objectos, i + 1, W1, W2)
+                    )
+
+    elif objectos[i].peso > W1 then 
+        valor := max(
+                    objectos[i].valor + back_max_val(objectos, i + 1, W1, W2 - objectos[i].peso),
+                    back_max_val(objectos, i + 1, W1, W2)
+                    )
+
+    else 
+        valor :=  max(
+                      objectos[i].valor + back_max_val(objectos, i + 1, W1 - objectos[i].peso, W2),
+                      objectos[i].valor + back_max_val(objectos, i + 1, W1, W2 - objectos[i].peso),
+                      back_max_val(objectos, i + 1, W1, W2)
+                      )
+
+end fun
+
+
+
+
+### Ejercicio 8: 
+
+Una fábrica de automóviles tiene dos lı́neas de ensamblaje y cada lı́nea tiene n estaciones de
+trabajo, S1,1 , . . . , S1,n para la primera y S2,1 , . . . , S2,n para la segunda. Dos estaciones S1,i y S2,i
+(para i = 1, . . . , n), hacen el mismo trabajo, pero lo hacen con costos a1,i y a2,i respectivamente,
+que pueden ser diferentes. Para fabricar un auto debemos pasar por n estaciones de trabajo
+Si1 ,1 , Si2 ,2 . . . , Sin ,n no necesariamente todas de la misma lı́nea de montaje (ik = 1, 2). Si el
+automóvil está en la estación Si,j , transferirlo a la otra lı́nea de montaje (es decir continuar en
+Si0 ,j+1 con i0 6= i) cuesta ti,j . Encontrar el costo mı́nimo de fabricar un automóvil usando ambas
+lı́neas.
+
+Parámetros de la función: En este caso voy a usar dos parámetros (i, j):
+
+    “iˮ para representar la estación actual en la que estamos
+
+    “jˮ para representar la linea de ensamblaje (j  1,2
+
+    Entonces sj,i representa la estación de trabajo “iˮ de la linea de ensamblaje “jˮ.
+
+    También tenemos aj, i el costo de hacer el trabajo en la estación “iˮ y linea “jˮ
+
+    Cambiar de estación va a costar ti,j
+
+Descripción de la función recursiva: la función recursiva minCost(i, j) calcula el minimo costo teniendo i estaciones de trabajo y usando la linea “jˮ
+
+Función recursiva:
+
+minCost = 
+        | 0 si i=0 V j=0 
+        | min(minCost(i-1,j) + aj,i,minCost(i-1,(j mod 2) + 1)) + a((j mod 2) + 1),i + ti + j)   si j>0
+
+Llamada principal: min(MinCost(n, 1), MinCost(n, 2))
+
+Explicación detallada: 
+En este caso creo conveniente hacer una explicación detallada, ya que use varias cosas raras, primero el j mod 2 + 1, es para
+elegir la estación no actual, si estoy en la estación j = 1, 1 mod 2 = 1 + 1 = 2, que es la estación diferente a la 1, y si j = 2, 2 mod 2 = 0 + 1 = 1 que es la
+estación diferente a la 2. Entonces usando ese truquito puedo elegir cambiar de estación sin tantos casos.
+Luego en mi llamada principal, busco el min(MinCost(n, 1), MinCost(n, 2)) ya que voy a buscar el mínimo empezando en la estación 1 o empezando en
+la estación 2, y ahí estarían todos los casos cubiertos.
+
+
+
+
+
+
+
+
